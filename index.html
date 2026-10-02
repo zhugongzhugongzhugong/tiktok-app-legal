@@ -1,31 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Terms of Service - Zhu Video Publisher</title>
-<style>body{font-family:-apple-system,Helvetica,Arial,sans-serif;max-width:800px;margin:40px auto;padding:0 20px;line-height:1.7;color:#222}h1{font-size:24px}h2{font-size:18px;margin-top:28px}p,li{font-size:15px}.meta{color:#888;font-size:13px}</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zhu Video Publisher</title>
+<style>
+  :root { --red: #fe2c55; --ink: #161823; --mute: #6b6d76; --line: #e3e3e4; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; background: #fff;
+         max-width: 800px; margin: 0 auto; padding: 0 16px; color: var(--ink); line-height: 1.65; }
+  header { display: flex; align-items: center; gap: 12px; padding: 28px 0 8px; }
+  header img { width: 48px; height: 48px; border-radius: 12px; }
+  header b { font-size: 20px; }
+  .hero h1 { font-size: 30px; line-height: 1.25; margin: 28px 0 12px; }
+  .hero p { color: var(--mute); font-size: 16px; margin: 0 0 20px; }
+  .btn { display: inline-block; background: var(--red); color: #fff; text-decoration: none;
+         border-radius: 8px; padding: 12px 24px; font-weight: 600; }
+  h2 { font-size: 20px; margin: 40px 0 12px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .card { border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  .card h3 { font-size: 15px; margin: 0 0 6px; }
+  .card p { font-size: 14px; color: var(--mute); margin: 0; }
+  ol li { margin: 6px 0; }
+  footer { border-top: 1px solid var(--line); margin-top: 48px; padding: 20px 0 32px;
+           font-size: 13px; color: var(--mute); display: flex; flex-wrap: wrap; gap: 16px; }
+  footer a { color: var(--mute); }
+</style>
 </head>
 <body>
-<h1>Terms of Service</h1>
-<p class="meta">Zhu Video Publisher · Last updated: October 2, 2026</p>
+<header>
+  <img src="app-icon.png" alt="Zhu Video Publisher icon">
+  <b>Zhu Video Publisher</b>
+</header>
 
-<h2>1. About this app</h2>
-<p>Zhu Video Publisher is a personal tool that lets the account owner upload videos and publish them to their own TikTok account via TikTok's official Content Posting API. The app is intended solely for the owner's own use.</p>
+<section class="hero">
+  <h1>Publish your finished videos to TikTok in one step.</h1>
+  <p>Zhu Video Publisher is a personal publishing tool for a creator who makes short technical
+     videos about industrial automation. It uploads each finished video to the creator's own TikTok
+     account through TikTok's official Content Posting API, so the same video doesn't have to be
+     uploaded by hand on every platform.</p>
+  <a class="btn" href="publisher.html">Open the publisher</a>
+</section>
 
-<h2>2. TikTok authorization</h2>
-<p>By connecting your TikTok account, you authorize this app to upload videos and publish posts to your TikTok profile using the permissions you grant (<code>video.upload</code>, <code>video.publish</code>). You may revoke this authorization at any time from your TikTok account settings, after which the app can no longer act on your account.</p>
+<h2>What it does</h2>
+<div class="grid">
+  <div class="card"><h3>Log in with TikTok</h3>
+    <p>Connect your account with TikTok Login Kit. The app shows which account it will post to before anything is uploaded.</p></div>
+  <div class="card"><h3>Post directly</h3>
+    <p>Choose the caption, who can view the video, and whether comments, Duet and Stitch are allowed, then post to your profile.</p></div>
+  <div class="card"><h3>Or send as a draft</h3>
+    <p>Send the video to your TikTok inbox instead, and finish editing and posting it in the TikTok app.</p></div>
+</div>
 
-<h2>3. Your content and responsibilities</h2>
-<p>You are solely responsible for the videos you publish through this app. You agree that your content will comply with TikTok's Community Guidelines and Terms of Service. The app does not review, edit, or take responsibility for your content.</p>
+<h2>How it works</h2>
+<ol>
+  <li>Open the publisher and select <b>Continue with TikTok</b>. TikTok asks you to log in and approve access.</li>
+  <li>Pick a video file and preview it.</li>
+  <li>Choose <b>Post directly</b> (set caption, privacy and interaction settings) or <b>Send as a draft</b>.</li>
+  <li>The app uploads the video to TikTok and shows when it's done.</li>
+  <li>Select <b>Disconnect</b> at any time to revoke access.</li>
+</ol>
 
-<h2>4. Acceptable use</h2>
-<p>You agree not to use this app to publish unlawful, infringing, misleading, or otherwise prohibited content, and not to attempt to circumvent TikTok's platform rules or rate limits.</p>
+<h2>Your data</h2>
+<p>The app only uses your basic TikTok profile (display name, username and avatar) to show which
+   account is connected, and an access token to upload the videos you choose. It does not read your
+   other videos, followers or messages, and never posts anything you didn't select. See the
+   <a href="privacy-policy.html">Privacy Policy</a> for details.</p>
 
-<h2>5. Availability</h2>
-<p>This is a personal utility provided "as is" without warranties of any kind. The owner may modify or discontinue it at any time.</p>
-
-<h2>6. Contact</h2>
-<p>For questions about these terms, contact the app owner through the TikTok developer portal.</p>
+<footer>
+  <span>© 2026 Zhu Video Publisher</span>
+  <a href="publisher.html">Publisher</a>
+  <a href="terms-of-service.html">Terms of Service</a>
+  <a href="privacy-policy.html">Privacy Policy</a>
+  <span>Contact: <a href="mailto:shzhuyadong@gmail.com">shzhuyadong@gmail.com</a></span>
+</footer>
 </body>
 </html>

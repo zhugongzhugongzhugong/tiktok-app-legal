@@ -5,57 +5,132 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Zhu Video Publisher</title>
 <style>
-  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
-         max-width: 680px; margin: 40px auto; padding: 0 20px; color: #161823; }
-  h1 { font-size: 24px; } h1 span { color: #fe2c55; }
-  .step { border: 1px solid #e3e3e4; border-radius: 12px; padding: 20px;
-          margin: 16px 0; }
-  .step h2 { font-size: 16px; margin: 0 0 10px; }
-  .step.done { border-color: #0a7d2c; }
-  .step.done h2::after { content: " ✓"; color: #0a7d2c; }
-  button { background: #fe2c55; color: #fff; border: 0; border-radius: 8px;
-           padding: 10px 24px; font-size: 14px; cursor: pointer; margin-top: 8px; }
-  button:disabled { background: #ccc; cursor: default; }
-  input[type=text] { width: 100%; padding: 10px; border: 1px solid #ccc;
-                     border-radius: 8px; font-size: 14px; box-sizing: border-box; }
-  #log { background: #0d1117; color: #c9d1d9; border-radius: 8px; padding: 16px;
-         font-family: ui-monospace, Menlo, monospace; font-size: 12.5px;
-         max-height: 260px; overflow-y: auto; white-space: pre-wrap; }
-  .ok { color: #3fb950; } .err { color: #f85149; } .inf { color: #79c0ff; }
-  #creator { font-size: 14px; line-height: 1.8; }
-  #creator img { width: 48px; height: 48px; border-radius: 50%; vertical-align: middle; }
-  footer { margin-top: 32px; font-size: 12px; color: #888; text-align: center; }
+  :root { --red: #fe2c55; --ink: #161823; --mute: #6b6d76; --line: #e3e3e4; --ok: #0a7d2c; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; background: #fff;
+         max-width: 720px; margin: 32px auto; padding: 0 16px; color: var(--ink); }
+  h1 { font-size: 24px; margin: 0 0 4px; } h1 span { color: var(--red); }
+  .sub { color: var(--mute); font-size: 14px; margin: 0 0 20px; }
+  .card { border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin: 16px 0; }
+  .card h2 { font-size: 16px; margin: 0 0 12px; }
+  .card.off { opacity: .45; pointer-events: none; }
+  button { background: var(--red); color: #fff; border: 0; border-radius: 8px;
+           padding: 10px 22px; font-size: 14px; cursor: pointer; }
+  button.ghost { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+  button:disabled { background: #d5d5d8; color: #fff; cursor: not-allowed; }
+  label.field { display: block; font-size: 13px; font-weight: 600; margin: 16px 0 6px; }
+  input[type=text], select, textarea { width: 100%; padding: 10px; border: 1px solid #c9c9ce;
+           border-radius: 8px; font-size: 14px; font-family: inherit; }
+  textarea { resize: vertical; min-height: 64px; }
+  .row { display: flex; gap: 20px; flex-wrap: wrap; }
+  .chk { display: flex; align-items: center; gap: 6px; font-size: 14px; }
+  .chk.disabled { color: #aaa; }
+  .hint { font-size: 12px; color: var(--mute); margin: 6px 0 0; }
+  .warn { font-size: 13px; color: #b54708; background: #fff6e5; border-radius: 8px;
+          padding: 8px 12px; margin: 10px 0 0; }
+  .info { font-size: 13px; color: #175cd3; background: #eef4ff; border-radius: 8px;
+          padding: 8px 12px; margin: 10px 0 0; }
+  #account { display: flex; align-items: center; gap: 12px; }
+  #account img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: #eee; }
+  #account .name { font-weight: 700; } #account .user { color: var(--mute); font-size: 13px; }
+  .pv { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+  video { width: 180px; max-height: 320px; border-radius: 8px; background: #000; }
+  .switch { position: relative; width: 40px; height: 22px; flex: none; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch span { position: absolute; inset: 0; background: #c9c9ce; border-radius: 22px; cursor: pointer; transition: .2s; }
+  .switch span::before { content: ""; position: absolute; width: 18px; height: 18px; left: 2px; top: 2px;
+                         background: #fff; border-radius: 50%; transition: .2s; }
+  .switch input:checked + span { background: var(--red); }
+  .switch input:checked + span::before { transform: translateX(18px); }
+  .toggle-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .decl { font-size: 13px; color: var(--mute); margin: 16px 0 10px; }
+  .decl a { color: var(--ink); }
+  #result { font-size: 14px; margin-top: 12px; line-height: 1.6; }
+  #result.ok { color: var(--ok); } #result.err { color: #d33; }
+  footer { margin: 32px 0 16px; font-size: 12px; color: #888; text-align: center; }
   footer a { color: #888; margin: 0 8px; }
 </style>
 </head>
 <body>
-<h1><span>▶</span> Zhu Video Publisher</h1>
-<p>Publish videos to your own TikTok account via the official Content Posting API.</p>
+<h1><span>&#9654;</span> Zhu Video Publisher</h1>
+<p class="sub">Publish videos to your own TikTok account with the official Content Posting API.</p>
 
-<div class="step" id="s1">
-  <h2>Step 1 · Connect TikTok account</h2>
-  <p style="font-size:13px;color:#555">Login Kit OAuth — scopes: user.info.basic, video.upload, video.publish</p>
-  <button id="btnConnect">Connect with TikTok</button>
+<!-- 1. Connect -->
+<div class="card" id="cardConnect">
+  <h2>1 · TikTok account</h2>
+  <div id="notConnected">
+    <p class="hint" style="margin:0 0 12px">Log in with TikTok to let this app post to your account.
+      Requested permissions: user.info.basic, video.upload, video.publish.</p>
+    <button id="btnConnect">Continue with TikTok</button>
+  </div>
+  <div id="connected" style="display:none">
+    <div id="account">
+      <img id="avatar" alt="">
+      <div style="flex:1">
+        <div>Posting to <span class="name" id="nickname"></span></div>
+        <div class="user" id="username"></div>
+      </div>
+      <button class="ghost" id="btnDisconnect">Disconnect</button>
+    </div>
+    <div class="warn" id="cannotPost" style="display:none"></div>
+  </div>
+  <div class="warn" id="connectErr" style="display:none"></div>
 </div>
 
-<div class="step" id="s2">
-  <h2>Step 2 · Paste authorization code</h2>
-  <input type="text" id="code" placeholder="Paste the code from the callback page">
-  <button id="btnToken">Get access token</button>
-  <div id="creator" style="margin-top:10px"></div>
-</div>
+<!-- 2. Post settings -->
+<div class="card off" id="cardPost">
+  <h2>2 · Post to TikTok</h2>
 
-<div class="step" id="s3">
-  <h2>Step 3 · Upload &amp; publish video</h2>
-  <input type="file" id="video" accept="video/mp4,video/quicktime"><br><br>
-  <input type="text" id="title" value="My first API publish #demo"><br>
-  <button id="btnPublish" disabled>Upload &amp; Direct Post</button>
-  <p style="font-size:12px;color:#888">Sandbox posts are published as private (SELF_ONLY).</p>
-</div>
+  <label class="field" for="video">Video</label>
+  <input type="file" id="video" accept="video/mp4,video/quicktime,video/webm">
+  <div class="pv" id="pvWrap" style="display:none; margin-top:12px">
+    <video id="preview" controls muted playsinline></video>
+    <div class="hint" id="pvInfo"></div>
+  </div>
+  <div class="warn" id="durWarn" style="display:none"></div>
 
-<div class="step">
-  <h2>Activity log</h2>
-  <div id="log"></div>
+  <label class="field">How do you want to share it?</label>
+  <label class="chk"><input type="radio" name="mode" value="direct" checked> Post directly to TikTok</label>
+  <p class="hint" style="margin:2px 0 8px 24px">Published to your profile with the settings below (video.publish).</p>
+  <label class="chk"><input type="radio" name="mode" value="draft"> Send to TikTok as a draft</label>
+  <p class="hint" style="margin:2px 0 0 24px">Uploaded to your TikTok inbox. Open TikTok to edit and post it yourself (video.upload).</p>
+
+  <div id="directFields">
+  <label class="field" for="title">Caption</label>
+  <textarea id="title" maxlength="2200" placeholder="Write a caption…"></textarea>
+
+  <label class="field" for="privacy">Who can view this video</label>
+  <select id="privacy"><option value="" selected disabled>Select privacy level</option></select>
+  <div class="warn" id="bcPrivacyWarn" style="display:none">Branded content visibility can't be set to private.</div>
+
+  <label class="field">Allow users to</label>
+  <div class="row">
+    <label class="chk" id="lblComment"><input type="checkbox" id="allowComment"> Comment</label>
+    <label class="chk" id="lblDuet"><input type="checkbox" id="allowDuet"> Duet</label>
+    <label class="chk" id="lblStitch"><input type="checkbox" id="allowStitch"> Stitch</label>
+  </div>
+
+  <div class="toggle-row" style="margin-top:20px">
+    <div>
+      <div style="font-size:13px;font-weight:600">Disclose video content</div>
+      <div class="hint" style="margin:2px 0 0">Turn on to disclose that this video promotes goods or services in exchange for something of value.</div>
+    </div>
+    <label class="switch"><input type="checkbox" id="disclose"><span></span></label>
+  </div>
+  <div id="discloseBox" style="display:none; margin-top:10px">
+    <label class="chk"><input type="checkbox" id="yourBrand"> Your brand</label>
+    <p class="hint" style="margin:2px 0 8px 24px">You are promoting yourself or your own business.</p>
+    <label class="chk" id="lblBranded"><input type="checkbox" id="brandedContent"> Branded content</label>
+    <p class="hint" style="margin:2px 0 0 24px">You are promoting another brand or a third party.</p>
+    <div class="info" id="discloseLabel" style="display:none"></div>
+    <div class="warn" id="discloseNeed">You need to indicate if your content promotes yourself, a third party, or both.</div>
+  </div>
+
+  <p class="decl" id="decl"></p>
+  </div>
+  <p class="decl" id="draftNote" style="display:none">After upload, TikTok will send you an inbox notification. Open it in the TikTok app to finish editing and post.</p>
+  <button id="btnPublish" disabled>Post</button>
+  <div id="result"></div>
 </div>
 
 <footer>
@@ -67,68 +142,258 @@
 var CLIENT_KEY = "sbawjb4mspd1rzgbm8";
 var REDIRECT_URI = "https://zhugongzhugongzhugong.github.io/tiktok-app-legal/callback.html";
 var API = "http://127.0.0.1:5000";
+var MUSIC_URL = "https://www.tiktok.com/legal/page/global/music-usage-confirmation/en";
+var BC_URL = "https://www.tiktok.com/legal/page/global/bc-policy/en";
+var PRIVACY_LABELS = {
+  PUBLIC_TO_EVERYONE: "Everyone",
+  MUTUAL_FOLLOW_FRIENDS: "Friends",
+  FOLLOWER_OF_CREATOR: "Followers",
+  SELF_ONLY: "Only me"
+};
 
-function log(msg, cls) {
-  var el = document.getElementById("log");
-  var d = document.createElement("div");
-  if (cls) d.className = cls;
-  d.textContent = new Date().toLocaleTimeString() + "  " + msg;
-  el.appendChild(d); el.scrollTop = el.scrollHeight;
+var $ = function (id) { return document.getElementById(id); };
+var creator = null, videoOk = false, videoDuration = 0, posting = false;
+
+async function api(path, opts) {
+  var r = await fetch(API + path, opts);
+  return r.json();
 }
-function done(id) { document.getElementById(id).classList.add("done"); }
 
-document.getElementById("btnConnect").onclick = function () {
-  var url = "https://www.tiktok.com/v2/auth/authorize/?client_key=" + CLIENT_KEY
+// ---------- 1. Connect ----------
+$("btnConnect").onclick = function () {
+  var state = Math.random().toString(36).slice(2) + Date.now().toString(36);
+  sessionStorage.setItem("tt_state", state);
+  location.href = "https://www.tiktok.com/v2/auth/authorize/?client_key=" + CLIENT_KEY
     + "&scope=" + encodeURIComponent("user.info.basic,video.upload,video.publish")
     + "&response_type=code&redirect_uri=" + encodeURIComponent(REDIRECT_URI)
-    + "&state=" + Date.now();
-  log("Opening TikTok authorization: " + url.slice(0, 80) + "...", "inf");
-  location.href = url;
+    + "&state=" + state;
 };
 
-document.getElementById("btnToken").onclick = async function () {
-  var code = document.getElementById("code").value.trim();
-  if (!code) { alert("Paste the authorization code first"); return; }
-  log("Exchanging code for access token...", "inf");
-  var r = await fetch(API + "/api/exchange",
-    {method: "POST", headers: {"Content-Type": "application/json"},
-     body: JSON.stringify({code: code})});
-  var j = await r.json();
-  if (j.access_token) {
-    log("Access token obtained (open_id " + j.open_id + ")", "ok");
-    done("s2");
-    var c = await (await fetch(API + "/api/creator")).json();
-    var d = (c.data) || {};
-    document.getElementById("creator").innerHTML =
-      (d.creator_avatar_url ? '<img src="' + d.creator_avatar_url + '"> ' : "") +
-      "<b>" + (d.creator_nickname || "") + "</b> @" + (d.creator_username || "") +
-      "<br>Privacy options: " + (d.privacy_level_options || []).join(", ");
-    log("Creator: " + d.creator_nickname + " @" + d.creator_username, "ok");
-    document.getElementById("btnPublish").disabled = false;
-  } else {
-    log("Token exchange failed: " + JSON.stringify(j).slice(0, 300), "err");
+$("btnDisconnect").onclick = async function () {
+  await api("/api/revoke", {method: "POST"}).catch(function () {});
+  creator = null;
+  showConnected(false);
+};
+
+function showConnected(on) {
+  $("notConnected").style.display = on ? "none" : "block";
+  $("connected").style.display = on ? "block" : "none";
+  $("cardPost").classList.toggle("off", !on);
+  refresh();
+}
+
+function connectError(text) {
+  $("connectErr").textContent = text;
+  $("connectErr").style.display = "block";
+}
+
+async function loadCreator() {
+  var c = await api("/api/creator");
+  if (!c.data || (c.error && c.error.code && c.error.code !== "ok")) {
+    var code = c.error && c.error.code;
+    if (code === "spam_risk_too_many_posts" || code === "reached_active_user_cap"
+        || code === "spam_risk_user_banned_from_posting") {
+      showConnected(true);
+      $("cannotPost").textContent = "This account can't post right now (" + code + "). Please try again later.";
+      $("cannotPost").style.display = "block";
+      $("cardPost").classList.add("off");
+      return;
+    }
+    if (c.error && c.error.code === "not_connected") { showConnected(false); return; }
+    connectError("Could not load account info: " + JSON.stringify(c.error || c).slice(0, 200));
+    return;
   }
-};
+  creator = c.data;
+  $("avatar").src = creator.creator_avatar_url || "";
+  $("nickname").textContent = creator.creator_nickname || "";
+  $("username").textContent = creator.creator_username ? "@" + creator.creator_username : "";
 
-document.getElementById("btnPublish").onclick = async function () {
-  var file = document.getElementById("video").files[0];
-  if (!file) { alert("Choose a video file first"); return; }
-  var title = document.getElementById("title").value;
-  log("Uploading " + file.name + " (" + (file.size/1024).toFixed(1) + " KB)...", "inf");
-  var fd = new FormData();
-  fd.append("video", file); fd.append("title", title);
-  this.disabled = true; this.textContent = "Publishing...";
+  var sel = $("privacy");
+  sel.length = 1;
+  (creator.privacy_level_options || []).forEach(function (v) {
+    var o = document.createElement("option");
+    o.value = v; o.textContent = PRIVACY_LABELS[v] || v;
+    sel.appendChild(o);
+  });
+  sel.value = "";
+
+  setInteraction("allowComment", "lblComment", creator.comment_disabled);
+  setInteraction("allowDuet", "lblDuet", creator.duet_disabled);
+  setInteraction("allowStitch", "lblStitch", creator.stitch_disabled);
+  showConnected(true);
+  checkDuration();
+}
+
+function setInteraction(boxId, lblId, disabled) {
+  $(boxId).checked = false;
+  $(boxId).disabled = !!disabled;
+  $(lblId).classList.toggle("disabled", !!disabled);
+  $(lblId).title = disabled ? "Turned off in this account's TikTok settings" : "";
+}
+
+async function init() {
+  var q = new URLSearchParams(location.search);
+  if (q.get("code")) {
+    history.replaceState(null, "", location.pathname);
+    var expected = sessionStorage.getItem("tt_state");
+    sessionStorage.removeItem("tt_state");
+    if (!expected || expected !== q.get("state")) {
+      connectError("Authorization state mismatch. Please connect again.");
+      showConnected(false);
+      return;
+    }
+    try {
+      var j = await api("/api/exchange", {method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({code: q.get("code")})});
+      if (!j.ok) { connectError("Login failed: " + JSON.stringify(j).slice(0, 200)); showConnected(false); return; }
+    } catch (e) {
+      connectError("Cannot reach the local publisher service at " + API + ".");
+      showConnected(false); return;
+    }
+  }
   try {
-    var r = await fetch(API + "/api/publish", {method: "POST", body: fd});
-    var j = await r.json();
-    log("Publish result: " + JSON.stringify(j).slice(0, 400),
-        j.ok ? "ok" : "err");
-    if (j.ok) { done("s3"); log("DONE — video published to TikTok (private).", "ok"); }
+    await loadCreator();
   } catch (e) {
-    log("Publish error: " + e, "err");
+    connectError("Cannot reach the local publisher service at " + API + ".");
+    showConnected(false);
   }
-  this.disabled = false; this.textContent = "Upload & Direct Post";
+}
+
+// ---------- 2. Video ----------
+$("video").onchange = function () {
+  var f = this.files[0];
+  videoOk = false; videoDuration = 0;
+  $("durWarn").style.display = "none";
+  if (!f) { $("pvWrap").style.display = "none"; refresh(); return; }
+  var v = $("preview");
+  v.src = URL.createObjectURL(f);
+  v.onloadedmetadata = function () {
+    videoDuration = v.duration;
+    $("pvInfo").textContent = f.name + " · " + (f.size / 1048576).toFixed(1) + " MB · "
+      + v.duration.toFixed(1) + " s · " + v.videoWidth + "×" + v.videoHeight;
+    checkDuration();
+  };
+  $("pvWrap").style.display = "flex";
 };
+
+function checkDuration() {
+  if (!videoDuration) { videoOk = false; refresh(); return; }
+  var max = creator && creator.max_video_post_duration_sec;
+  if (max && videoDuration > max) {
+    videoOk = false;
+    $("durWarn").textContent = "This video is " + videoDuration.toFixed(0)
+      + " s. This account can post videos up to " + max + " s.";
+    $("durWarn").style.display = "block";
+  } else {
+    videoOk = true;
+    $("durWarn").style.display = "none";
+  }
+  refresh();
+}
+
+// ---------- Disclosure / privacy rules ----------
+["privacy", "disclose", "yourBrand", "brandedContent"].forEach(function (id) {
+  $(id).addEventListener("change", refresh);
+});
+document.querySelectorAll('input[name=mode]').forEach(function (r) {
+  r.addEventListener("change", refresh);
+});
+function mode() { return document.querySelector('input[name=mode]:checked').value; }
+
+function refresh() {
+  var draft = mode() === "draft";
+  $("directFields").style.display = draft ? "none" : "block";
+  $("draftNote").style.display = draft ? "block" : "none";
+  if (!posting) $("btnPublish").textContent = draft ? "Send to TikTok" : "Post";
+
+  var disclose = $("disclose").checked;
+  var yb = $("yourBrand").checked, bc = $("brandedContent").checked;
+  $("discloseBox").style.display = disclose ? "block" : "none";
+  if (!disclose) { $("yourBrand").checked = false; $("brandedContent").checked = false; yb = bc = false; }
+
+  // Branded content cannot be private.
+  var priv = $("privacy");
+  var selfOpt = priv.querySelector('option[value="SELF_ONLY"]');
+  if (selfOpt) {
+    selfOpt.disabled = bc;
+    if (bc && priv.value === "SELF_ONLY") priv.value = "";
+  }
+  $("bcPrivacyWarn").style.display = bc ? "block" : "none";
+  $("brandedContent").disabled = priv.value === "SELF_ONLY";
+  $("lblBranded").classList.toggle("disabled", priv.value === "SELF_ONLY");
+  $("lblBranded").title = priv.value === "SELF_ONLY" ? "Branded content visibility can't be set to private." : "";
+
+  var lbl = $("discloseLabel");
+  if (disclose && (yb || bc)) {
+    lbl.textContent = bc ? "Your video will be labeled \"Paid partnership\"."
+                         : "Your video will be labeled \"Promotional content\".";
+    lbl.style.display = "block";
+  } else { lbl.style.display = "none"; }
+  $("discloseNeed").style.display = disclose && !yb && !bc ? "block" : "none";
+
+  $("decl").innerHTML = bc
+    ? 'By posting, you agree to TikTok\'s <a href="' + BC_URL + '" target="_blank">Branded Content Policy</a> and <a href="' + MUSIC_URL + '" target="_blank">Music Usage Confirmation</a>.'
+    : 'By posting, you agree to TikTok\'s <a href="' + MUSIC_URL + '" target="_blank">Music Usage Confirmation</a>.';
+
+  var ready = !!creator && videoOk && !posting
+    && (draft || (priv.value !== "" && (!disclose || yb || bc)));
+  $("btnPublish").disabled = !ready;
+}
+
+// ---------- Post ----------
+$("btnPublish").onclick = async function () {
+  var f = $("video").files[0];
+  var draft = mode() === "draft";
+  var fd = new FormData();
+  fd.append("video", f);
+  fd.append("mode", draft ? "draft" : "direct");
+  fd.append("title", $("title").value);
+  fd.append("privacy_level", $("privacy").value);
+  fd.append("disable_comment", !$("allowComment").checked);
+  fd.append("disable_duet", !$("allowDuet").checked);
+  fd.append("disable_stitch", !$("allowStitch").checked);
+  fd.append("brand_organic_toggle", $("yourBrand").checked);
+  fd.append("brand_content_toggle", $("brandedContent").checked);
+
+  posting = true; refresh();
+  this.textContent = "Uploading…";
+  var res = $("result"); res.className = ""; res.textContent = "Uploading video to TikTok…";
+  try {
+    var j = await api("/api/publish", {method: "POST", body: fd});
+    if (!j.ok) throw new Error(JSON.stringify(j.error || j).slice(0, 300));
+    this.textContent = "Processing…";
+    res.textContent = "Uploaded. TikTok is processing the video…";
+    var status = await poll(j.publish_id);
+    if (status.status === "PUBLISH_COMPLETE") {
+      res.className = "ok";
+      res.textContent = "Posted. It may take a few minutes for the video to be processed and appear on your TikTok profile.";
+    } else if (status.status === "SEND_TO_USER_INBOX") {
+      res.className = "ok";
+      res.textContent = "Sent to TikTok. Check your TikTok inbox notification to edit and post the video.";
+    } else {
+      throw new Error(status.status + (status.fail_reason ? " - " + status.fail_reason : ""));
+    }
+  } catch (e) {
+    res.className = "err";
+    res.textContent = "Post failed: " + e.message;
+  }
+  posting = false;
+  refresh();
+};
+
+async function poll(publishId) {
+  for (var i = 0; i < 60; i++) {
+    var s = await api("/api/status?publish_id=" + encodeURIComponent(publishId));
+    var d = s.data || {};
+    if (d.status === "PUBLISH_COMPLETE" || d.status === "SEND_TO_USER_INBOX"
+        || d.status === "FAILED") return d;
+    await new Promise(function (r) { setTimeout(r, 3000); });
+  }
+  return {status: "TIMEOUT"};
+}
+
+init();
 </script>
 </body>
 </html>
