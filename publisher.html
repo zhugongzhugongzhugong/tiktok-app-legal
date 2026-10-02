@@ -63,6 +63,7 @@
       Requested permissions: user.info.basic, video.upload, video.publish.</p>
     <button id="btnConnect">Continue with TikTok</button>
   </div>
+  <div id="connecting" style="display:none" class="hint">Connecting your TikTok account…</div>
   <div id="connected" style="display:none">
     <div id="account">
       <img id="avatar" alt="">
@@ -176,6 +177,7 @@ $("btnDisconnect").onclick = async function () {
 };
 
 function showConnected(on) {
+  $("connecting").style.display = "none";
   $("notConnected").style.display = on ? "none" : "block";
   $("connected").style.display = on ? "block" : "none";
   $("cardPost").classList.toggle("off", !on);
@@ -201,6 +203,7 @@ async function loadCreator() {
     }
     if (c.error && c.error.code === "not_connected") { showConnected(false); return; }
     connectError("Could not load account info: " + JSON.stringify(c.error || c).slice(0, 200));
+    showConnected(false);
     return;
   }
   creator = c.data;
@@ -233,6 +236,9 @@ function setInteraction(boxId, lblId, disabled) {
 
 async function init() {
   var q = new URLSearchParams(location.search);
+  // Until we know the connection state, show neither the login button nor the account.
+  $("notConnected").style.display = "none";
+  $("connecting").style.display = "block";
   if (q.get("code")) {
     history.replaceState(null, "", location.pathname);
     var expected = sessionStorage.getItem("tt_state");
