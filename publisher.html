@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zhu Video Publisher</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+         max-width: 680px; margin: 40px auto; padding: 0 20px; color: #161823; }
+  h1 { font-size: 24px; } h1 span { color: #fe2c55; }
+  .step { border: 1px solid #e3e3e4; border-radius: 12px; padding: 20px;
+          margin: 16px 0; }
+  .step h2 { font-size: 16px; margin: 0 0 10px; }
+  .step.done { border-color: #0a7d2c; }
+  .step.done h2::after { content: " ✓"; color: #0a7d2c; }
+  button { background: #fe2c55; color: #fff; border: 0; border-radius: 8px;
+           padding: 10px 24px; font-size: 14px; cursor: pointer; margin-top: 8px; }
+  button:disabled { background: #ccc; cursor: default; }
+  input[type=text] { width: 100%; padding: 10px; border: 1px solid #ccc;
+                     border-radius: 8px; font-size: 14px; box-sizing: border-box; }
+  #log { background: #0d1117; color: #c9d1d9; border-radius: 8px; padding: 16px;
+         font-family: ui-monospace, Menlo, monospace; font-size: 12.5px;
+         max-height: 260px; overflow-y: auto; white-space: pre-wrap; }
+  .ok { color: #3fb950; } .err { color: #f85149; } .inf { color: #79c0ff; }
+  #creator { font-size: 14px; line-height: 1.8; }
+  #creator img { width: 48px; height: 48px; border-radius: 50%; vertical-align: middle; }
+  footer { margin-top: 32px; font-size: 12px; color: #888; text-align: center; }
+  footer a { color: #888; margin: 0 8px; }
+</style>
+</head>
+<body>
+<h1><span>▶</span> Zhu Video Publisher</h1>
+<p>Publish videos to your own TikTok account via the official Content Posting API.</p>
+
+<div class="step" id="s1">
+  <h2>Step 1 · Connect TikTok account</h2>
+  <p style="font-size:13px;color:#555">Login Kit OAuth — scopes: user.info.basic, video.upload, video.publish</p>
+  <button id="btnConnect">Connect with TikTok</button>
+</div>
+
+<div class="step" id="s2">
+  <h2>Step 2 · Paste authorization code</h2>
+  <input type="text" id="code" placeholder="Paste the code from the callback page">
+  <button id="btnToken">Get access token</button>
+  <div id="creator" style="margin-top:10px"></div>
+</div>
+
+<div class="step" id="s3">
+  <h2>Step 3 · Upload &amp; publish video</h2>
+  <input type="file" id="video" accept="video/mp4,video/quicktime"><br><br>
+  <input type="text" id="title" value="My first API publish #demo"><br>
+  <button id="btnPublish" disabled>Upload &amp; Direct Post</button>
+  <p style="font-size:12px;color:#888">Sandbox posts are published as private (SELF_ONLY).</p>
+</div>
+
+<div class="step">
+  <h2>Activity log</h2>
+  <div id="log"></div>
+</div>
+
+<footer>
+  <a href="terms-of-service.html">Terms of Service</a> ·
+  <a href="privacy-policy.html">Privacy Policy</a>
+</footer>
+
+<script>
+var CLIENT_KEY = "sbawjb4mspd1rzgbm8";
+var REDIRECT_URI = "https://zhugongzhugongzhugong.github.io/tiktok-app-legal/callback.html";
+var API = "http://127.0.0.1:5000";
+
+function log(msg, cls) {
+  var el = document.getElementById("log");
+  var d = document.createElement("div");
+  if (cls) d.className = cls;
+  d.textContent = new Date().toLocaleTimeString() + "  " + msg;
+  el.appendChild(d); el.scrollTop = el.scrollHeight;
+}
+function done(id) { document.getElementById(id).classList.add("done"); }
+
+document.getElementById("btnConnect").onclick = function () {
+  var url = "https://www.tiktok.com/v2/auth/authorize/?client_key=" + CLIENT_KEY
+    + "&scope=" + encodeURIComponent("user.info.basic,video.upload,video.publish")
+    + "&response_type=code&redirect_uri=" + encodeURIComponent(REDIRECT_URI)
+    + "&state=" + Date.now();
+  log("Opening TikTok authorization: " + url.slice(0, 80) + "...", "inf");
+  location.href = url;
+};
+
+document.getElementById("btnToken").onclick = async function () {
+  var code = document.getElementById("code").value.trim();
+  if (!code) { alert("Paste the authorization code first"); return; }
+  log("Exchanging code for access token...", "inf");
+  var r = await fetch(API + "/api/exchange",
+    {method: "POST", headers: {"Content-Type": "application/json"},
+     body: JSON.stringify({code: code})});
+  var j = await r.json();
+  if (j.access_token) {
+    log("Access token obtained (open_id " + j.open_id + ")", "ok");
+    done("s2");
+    var c = await (await fetch(API + "/api/creator")).json();
+    var d = (c.data) || {};
+    document.getElementById("creator").innerHTML =
+      (d.creator_avatar_url ? '<img src="' + d.creator_avatar_url + '"> ' : "") +
+      "<b>" + (d.creator_nickname || "") + "</b> @" + (d.creator_username || "") +
+      "<br>Privacy options: " + (d.privacy_level_options || []).join(", ");
+    log("Creator: " + d.creator_nickname + " @" + d.creator_username, "ok");
+    document.getElementById("btnPublish").disabled = false;
+  } else {
+    log("Token exchange failed: " + JSON.stringify(j).slice(0, 300), "err");
+  }
+};
+
+document.getElementById("btnPublish").onclick = async function () {
+  var file = document.getElementById("video").files[0];
+  if (!file) { alert("Choose a video file first"); return; }
+  var title = document.getElementById("title").value;
+  log("Uploading " + file.name + " (" + (file.size/1024).toFixed(1) + " KB)...", "inf");
+  var fd = new FormData();
+  fd.append("video", file); fd.append("title", title);
+  this.disabled = true; this.textContent = "Publishing...";
+  try {
+    var r = await fetch(API + "/api/publish", {method: "POST", body: fd});
+    var j = await r.json();
+    log("Publish result: " + JSON.stringify(j).slice(0, 400),
+        j.ok ? "ok" : "err");
+    if (j.ok) { done("s3"); log("DONE — video published to TikTok (private).", "ok"); }
+  } catch (e) {
+    log("Publish error: " + e, "err");
+  }
+  this.disabled = false; this.textContent = "Upload & Direct Post";
+};
+</script>
+</body>
+</html>
