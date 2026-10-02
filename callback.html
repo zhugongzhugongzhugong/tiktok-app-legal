@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TikTok 授权回调 - Zhu Video Publisher</title>
+<style>
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+         max-width: 640px; margin: 60px auto; padding: 0 20px; color: #161823; }
+  .card { border: 1px solid #e3e3e4; border-radius: 12px; padding: 32px;
+          box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+  h1 { font-size: 20px; margin: 0 0 12px; }
+  p { color: #555; line-height: 1.7; font-size: 14px; }
+  #code { font-family: ui-monospace, Menlo, monospace; font-size: 15px;
+          background: #f6f6f7; border: 1px dashed #ccc; border-radius: 8px;
+          padding: 16px; word-break: break-all; margin: 16px 0; }
+  button { background: #fe2c55; color: #fff; border: 0; border-radius: 8px;
+           padding: 12px 28px; font-size: 15px; cursor: pointer; }
+  button:active { opacity: .85; }
+  .err { color: #d33; }
+  .ok { color: #0a7d2c; font-weight: bold; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Zhu Video Publisher · TikTok 授权回调</h1>
+  <div id="msg"><p>正在读取授权结果…</p></div>
+  <div id="code" style="display:none"></div>
+  <div id="actions" style="display:none">
+    <button onclick="copyCode()">复制授权码</button>
+    <p>把授权码发给 Muse，即可完成 token 换取（10 分钟内有效）。</p>
+  </div>
+</div>
+<script>
+(function () {
+  var q = new URLSearchParams(location.search);
+  var msg = document.getElementById('msg');
+  var code = q.get('code');
+  var err = q.get('error');
+  if (code) {
+    msg.innerHTML = '<p class="ok">✓ 授权成功！你的授权码：</p>';
+    var c = document.getElementById('code');
+    c.textContent = code; c.style.display = 'block';
+    document.getElementById('actions').style.display = 'block';
+    window._code = code;
+  } else if (err) {
+    msg.innerHTML = '<p class="err">授权失败：' + err +
+      (q.get('error_description') ? ' - ' + q.get('error_description') : '') +
+      '</p><p>请关闭此页，重新从发布工具发起授权。</p>';
+  } else {
+    msg.innerHTML = '<p>没有收到授权码。请从发布工具重新发起 TikTok 授权。</p>';
+  }
+})();
+function copyCode() {
+  navigator.clipboard.writeText(window._code || '').then(function () {
+    alert('已复制');
+  });
+}
+</script>
+</body>
+</html>
