@@ -83,7 +83,9 @@
   <h2>2 · Post to TikTok</h2>
 
   <label class="field" for="video">Video</label>
-  <input type="file" id="video" accept="video/mp4,video/quicktime,video/webm">
+  <input type="file" id="video" accept="video/mp4,video/quicktime,video/webm" style="display:none">
+  <button type="button" class="ghost" id="btnChoose">Choose video</button>
+  <span class="hint" id="fileName" style="margin-left:8px">No file selected</span>
   <div class="pv" id="pvWrap" style="display:none; margin-top:12px">
     <video id="preview" controls muted playsinline></video>
     <div class="hint" id="pvInfo"></div>
@@ -267,8 +269,11 @@ async function init() {
 }
 
 // ---------- 2. Video ----------
+$("btnChoose").onclick = function () { $("video").click(); };
+
 $("video").onchange = function () {
   var f = this.files[0];
+  $("fileName").textContent = f ? f.name : "No file selected";
   videoOk = false; videoDuration = 0;
   $("durWarn").style.display = "none";
   if (!f) { $("pvWrap").style.display = "none"; refresh(); return; }
